@@ -55,6 +55,9 @@ source_def.output_flags = bit.bor(obs.OBS_SOURCE_CUSTOM_DRAW)
 
 -- TEXT SOURCE NAMES USED BY LYRICS
 source_name = ""
+source_two_name = ""
+source_three_name = ""
+source_four_name = ""
 alternate_source_name = ""
 static_source_name = ""
 static_text = ""
@@ -585,12 +588,18 @@ end
 function refresh_button_clicked(props, p)
 dbg_method("Refresh Sources")
     local source_prop = obs.obs_properties_get(props, "prop_source_list")
+    local source_two_prop = obs.obs_properties_get(props, "prop_source_list_2")
+    local source_three_prop = obs.obs_properties_get(props, "prop_source_list_3")
+    local source_four_prop = obs.obs_properties_get(props, "prop_source_list_4")
     local alternate_source_prop = obs.obs_properties_get(props, "prop_alternate_list")
     local static_source_prop = obs.obs_properties_get(props, "prop_static_list")
     local title_source_prop = obs.obs_properties_get(props, "prop_title_list")
     local extra_source_prop = obs.obs_properties_get(props, "extra_source_list")
 
     obs.obs_property_list_clear(source_prop) -- clear current properties list
+    obs.obs_property_list_clear(source_two_prop) -- clear current properties list
+    obs.obs_property_list_clear(source_three_prop) -- clear current properties list
+    obs.obs_property_list_clear(source_four_prop) -- clear current properties list
     obs.obs_property_list_clear(alternate_source_prop) -- clear current properties list
     obs.obs_property_list_clear(static_source_prop) -- clear current properties list
     obs.obs_property_list_clear(title_source_prop) -- clear current properties list
@@ -613,11 +622,17 @@ dbg_method("Refresh Sources")
         end
         table.sort(n)
         obs.obs_property_list_add_string(source_prop, "", "")
+        obs.obs_property_list_add_string(source_two_prop, "", "")
+        obs.obs_property_list_add_string(source_three_prop, "", "")
+        obs.obs_property_list_add_string(source_four_prop, "", "")
         obs.obs_property_list_add_string(title_source_prop, "", "")
         obs.obs_property_list_add_string(alternate_source_prop, "", "")
         obs.obs_property_list_add_string(static_source_prop, "", "")
         for _, name in ipairs(n) do
             obs.obs_property_list_add_string(source_prop, name, name)
+            obs.obs_property_list_add_string(source_two_prop, name, name)
+            obs.obs_property_list_add_string(source_three_prop, name, name)
+            obs.obs_property_list_add_string(source_four_prop, name, name)
             obs.obs_property_list_add_string(title_source_prop, name, name)
             obs.obs_property_list_add_string(alternate_source_prop, name, name)
             obs.obs_property_list_add_string(static_source_prop, name, name)
@@ -642,6 +657,9 @@ end
 function refresh_directory()
     local prop_dir_list = obs.obs_properties_get(script_props, "prop_directory_list")
     local source_prop = obs.obs_properties_get(props, "prop_source_list")
+    local source_two_prop = obs.obs_properties_get(props, "prop_source_list_2")
+    local source_three_prop = obs.obs_properties_get(props, "prop_source_list_3")
+    local source_four_prop = obs.obs_properties_get(props, "prop_source_list_4")
     load_source_song_directory(use_meta_tags)
     table.sort(song_directory)
     obs.obs_property_list_clear(prop_dir_list) -- clear directories
@@ -1198,6 +1216,9 @@ end
 function apply_source_opacity()
 dbg_method("Apply Opacity")
 	setSourceOpacity(source_name, fade_text_back)
+    setSourceOpacity(source_two_name, fade_text_back)
+    setSourceOpacity(source_three_name, fade_text_back)
+    setSourceOpacity(source_four_name, fade_text_back)
 	setSourceOpacity(alternate_source_name, fade_alternate_back)
     if all_sources_fade then
        setSourceOpacity(title_source_name, fade_title_back)
@@ -1272,6 +1293,9 @@ end
 function read_source_opacity()
 	dbg_method("read_source_opacity")
 	getSourceOpacity(source_name)
+    getSourceOpacity(source_two_name)
+    getSourceOpacity(source_three_name)
+    getSourceOpacity(source_four_name)
 	getSourceOpacity(alternate_source_name)
     getSourceOpacity(title_source_name)
     getSourceOpacity(static_source_name)
@@ -1392,6 +1416,9 @@ function update_source_text()
     dbg_method("update_source_text")
     dbg_custom("Page Index: " .. page_index)
     local text = ""
+    local text_two = ""
+    local text_three = ""
+    local text_four = ""
     local alttext = ""
     local next_lyric = ""
     local next_alternate = ""
@@ -1413,6 +1440,9 @@ function update_source_text()
     end
 
     local source = obs.obs_get_source_by_name(source_name)
+    local source_two = obs.obs_get_source_by_name(source_two_name)
+    local source_three = obs.obs_get_source_by_name(source_three_name)
+    local source_four = obs.obs_get_source_by_name(source_four_name)
     local alt_source = obs.obs_get_source_by_name(alternate_source_name)
     local stat_source = obs.obs_get_source_by_name(static_source_name)
     local title_source = obs.obs_get_source_by_name(title_source_name)
@@ -1421,6 +1451,15 @@ function update_source_text()
         if #lyrics > 0 then
             if lyrics[page_index] ~= nil then
                 text = lyrics[page_index]
+                if page_index > 1 then
+                    text_two = lyrics[page_index-1]
+                end
+                if page_index > 2 then
+                    text_three = lyrics[page_index-2]
+                end
+                if page_index > 3 then
+                    text_four = lyrics[page_index-3]
+                end
             end
         end
         if #alternate > 0 then
@@ -1437,6 +1476,27 @@ function update_source_text()
         end
     end
     -- update source texts
+    if source_four ~= nil then
+        dbg_inner("Title Load")
+        local settings = obs.obs_data_create()
+        obs.obs_data_set_string(settings, "text", text_four)
+        obs.obs_source_update(source_four, settings)
+        obs.obs_data_release(settings)
+    end
+    if source_three ~= nil then
+        dbg_inner("Title Load")
+        local settings = obs.obs_data_create()
+        obs.obs_data_set_string(settings, "text", text_three)
+        obs.obs_source_update(source_three, settings)
+        obs.obs_data_release(settings)
+    end
+    if source_two ~= nil then
+        dbg_inner("Title Load")
+        local settings = obs.obs_data_create()
+        obs.obs_data_set_string(settings, "text", text_two)
+        obs.obs_source_update(source_two, settings)
+        obs.obs_data_release(settings)
+    end
     if source ~= nil then
         dbg_inner("Title Load")
         local settings = obs.obs_data_create()
@@ -2611,6 +2671,30 @@ function script_properties()
         obs.OBS_COMBO_TYPE_LIST,
         obs.OBS_COMBO_FORMAT_STRING
     )
+    local source_two_prop =
+        obs.obs_properties_add_list(
+        gp,
+        "prop_source_list_2",
+        "<font color=#FFD966>Prev 1 Text Source</font>",
+        obs.OBS_COMBO_TYPE_LIST,
+        obs.OBS_COMBO_FORMAT_STRING
+    )
+    local source_three_prop =
+        obs.obs_properties_add_list(
+        gp,
+        "prop_source_list_3",
+        "<font color=#FFD966>Prev 2 Text Source</font>",
+        obs.OBS_COMBO_TYPE_LIST,
+        obs.OBS_COMBO_FORMAT_STRING
+    )
+    local source_four_prop =
+        obs.obs_properties_add_list(
+        gp,
+        "prop_source_list_4",
+        "<font color=#FFD966>Prev 3 Text Source</font>",
+        obs.OBS_COMBO_TYPE_LIST,
+        obs.OBS_COMBO_FORMAT_STRING
+    )
 	local flbprop = obs.obs_properties_add_bool(gp, "fade_text_back", "Fade Text Background")
     local title_source_prop =
         obs.obs_properties_add_list(
@@ -2698,11 +2782,17 @@ function script_properties()
         end
         table.sort(n)
         obs.obs_property_list_add_string(source_prop, "", "")
+        obs.obs_property_list_add_string(source_two_prop, "", "")
+        obs.obs_property_list_add_string(source_three_prop, "", "")
+        obs.obs_property_list_add_string(source_four_prop, "", "")
         obs.obs_property_list_add_string(title_source_prop, "", "")
         obs.obs_property_list_add_string(alternate_source_prop, "", "")
         obs.obs_property_list_add_string(static_source_prop, "", "")
         for _, name in ipairs(n) do
             obs.obs_property_list_add_string(source_prop, name, name)
+            obs.obs_property_list_add_string(source_two_prop, name, name)
+            obs.obs_property_list_add_string(source_three_prop, name, name)
+            obs.obs_property_list_add_string(source_four_prop, name, name)
             obs.obs_property_list_add_string(title_source_prop, name, name)
             obs.obs_property_list_add_string(alternate_source_prop, name, name)
             obs.obs_property_list_add_string(static_source_prop, name, name)
@@ -2738,6 +2828,9 @@ function script_update(settings)
     text_fade_speed = obs.obs_data_get_int(settings, "text_fade_speed")
     display_lines = obs.obs_data_get_int(settings, "prop_lines_counter")
     source_name = obs.obs_data_get_string(settings, "prop_source_list")
+    source_two_name = obs.obs_data_get_string(settings, "prop_source_list_2")
+    source_three_name = obs.obs_data_get_string(settings, "prop_source_list_3")
+    source_four_name = obs.obs_data_get_string(settings, "prop_source_list_4")
     alternate_source_name = obs.obs_data_get_string(settings, "prop_alternate_list")
     static_source_name = obs.obs_data_get_string(settings, "prop_static_list")
     title_source_name = obs.obs_data_get_string(settings, "prop_title_list")
@@ -2951,6 +3044,9 @@ function script_load(settings)
 
     script_sets = settings
     source_name = obs.obs_data_get_string(settings, "prop_source_list")
+    source_two_name = obs.obs_data_get_string(settings, "prop_source_list_2")
+    source_three_name = obs.obs_data_get_string(settings, "prop_source_list_3")
+    source_four_name = obs.obs_data_get_string(settings, "prop_source_list_4")
 
     -- load previously defined extra sources from settings array into table
     -- script_properties function will take them from the table and restore them as UI properties
